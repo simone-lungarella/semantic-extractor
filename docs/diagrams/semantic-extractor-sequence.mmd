@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant API as Spring Boot API
+    participant Importer as Word Import Service
+    participant Model as Embedding Model
+    participant Redis as Redis Vector Store
+
+    rect rgb(240, 247, 255)
+        Note over User,Redis: Catalog import
+        User->>API: POST /api/words/import?limit=1000
+        API->>Importer: Import configured words file
+        Importer->>Importer: Normalize, filter, and deduplicate terms
+        loop For each batch of accepted terms
+            Importer->>Model: Generate term embeddings
+            Model-->>Importer: Embedding vectors
+            Importer->>Redis: Store terms, metadata, and vectors
+            Redis-->>Importer: Import acknowledged
+        end
+        Importer-->>API: Import summary
+        API-->>User: Imported and skipped counts
+    end
+
+    rect rgb(245, 255, 245)
+        Note over User,Redis: Semantic search
+        User->>API: GET /api/words/semantic?q=...&limit=5
+        API->>Model: Generate query embedding
+        Model-->>API: Query vector
+        API->>Redis: Find nearest term vectors
+        Redis-->>API: Terms and similarity scores
+        API->>API: Apply score threshold and rank results
+        API-->>User: Top semantic matches
+    end
