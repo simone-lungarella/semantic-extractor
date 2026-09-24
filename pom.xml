@@ -11,11 +11,15 @@
 	<groupId>it.ai</groupId>
 	<artifactId>semantic-extractor</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>Semantic Extractor</name>
+	<description>Proof of concept comparing lexical and semantic search with Redis and watsonx.ai</description>
 	<url/>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/license/mit</url>
+			<distribution>repo</distribution>
+		</license>
 	</licenses>
 	<developers>
 		<developer/>
