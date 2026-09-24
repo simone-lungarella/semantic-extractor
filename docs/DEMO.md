@@ -1,10 +1,9 @@
 # Demonstration Guide
 
-This guide runs and records the complete local semantic-search workflow. It
-uses the IBM Granite Embedding 30M English model through Ollama; no cloud
-credentials are required.
+This guide runs the complete local semantic-search workflow with IBM Granite
+Embedding 30M English through Ollama. No cloud credentials are required.
 
-## Before recording
+## Before starting
 
 Run this once to download the local model:
 
@@ -12,9 +11,8 @@ Run this once to download the local model:
 make ollama-pull
 ```
 
-Close any application already using port 8080. Use two terminal windows with a
-large, readable font and avoid displaying unrelated files, credentials, or
-notifications.
+Close any application already using port 8080. The walkthrough uses two
+terminal windows: one for the application and one for commands.
 
 ## Start the demonstration
 

@@ -12,8 +12,7 @@
 	<artifactId>semantic-extractor</artifactId>
 	<version>1.0.0</version>
 	<name>Semantic Extractor</name>
-	<description>Proof of concept comparing lexical and semantic search with Redis and watsonx.ai</description>
-	<url/>
+	<description>Proof of concept comparing lexical and semantic search with IBM Granite and Redis</description>
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -21,15 +20,6 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
 	<properties>
 		<java.version>17</java.version>
 		<watsonx-ai.version>0.40.0</watsonx-ai.version>

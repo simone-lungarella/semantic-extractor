@@ -12,7 +12,7 @@ sequenceDiagram
         User->>Make: make import
         Make->>API: GET /actuator/health
         API-->>Make: Application and Redis are UP
-        Make->>Make: Read first 1,000 dictionary entries
+        Make->>Make: Build a distributed deterministic dictionary sample
         Make->>API: POST /api/words/import?reset=true (text/plain)
         API->>Importer: Normalize, filter, and deduplicate terms
         Importer->>Model: Generate term embeddings in batches

@@ -15,7 +15,9 @@ public class NoEmbeddingClient implements EmbeddingClient {
     @Override
     public List<List<Float>> embed(List<String> inputs) {
         throw new EmbeddingUnavailableException(
-                "No embedding provider is configured. Set EMBEDDING_PROVIDER=watsonx and provide watsonx credentials.");
+                "Semantic operations require an embedding provider. "
+                        + "Set EMBEDDING_PROVIDER=ollama for local inference or EMBEDDING_PROVIDER=watsonx "
+                        + "with the required watsonx.ai configuration.");
     }
 
     @Override

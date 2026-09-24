@@ -57,8 +57,8 @@ Semantic search:
 
 1. generate an embedding for a natural-language query;
 2. execute a nearest-neighbor search over the term vectors in Redis;
-3. return the closest terms with similarity scores; and
-4. returns normalized cosine-similarity scores.
+3. convert cosine distance to a normalized similarity score; and
+4. return the closest catalog terms in ranked order.
 
 Comparing lexical and semantic results demonstrates where embeddings improve
 concept-based discovery and where the limited corpus reduces their value.
@@ -143,14 +143,14 @@ provider selected, import generates vectors in batches, stores them as binary
 
 Run `make help` to see all available development commands.
 
-[`DEMO.md`](DEMO.md) provides a repeatable walkthrough and suggested recording
-structure for presenting the complete workflow.
+[`docs/DEMO.md`](docs/DEMO.md) provides a repeatable walkthrough of the complete
+workflow.
 
 ## watsonx.ai embeddings
 
-The optional watsonx.ai integration requires an IBM Cloud API key, a watsonx.ai project
-ID, and the regional service URL. Credentials are supplied through environment
-variables and must not be committed to the repository.
+The optional watsonx.ai integration requires an IBM Cloud API key, a watsonx.ai
+project ID, and the regional service URL. Credentials are supplied through
+environment variables and must not be committed to the repository.
 
 ```bash
 export EMBEDDING_PROVIDER=watsonx
@@ -169,10 +169,12 @@ the Redis index for the selected vector dimensions.
 
 ## Evaluation
 
-The final POC will use a small set of natural-language queries with known
-expected terms. Its primary measure is whether an expected term appears among
-the first five results. Semantic results will be compared with the lexical
-baseline, and unsuccessful queries will be retained rather than excluded.
+The POC uses four natural-language queries with known expected terms. Its
+primary measure is whether an expected term appears among the first five
+results. The validated local run retrieved `library`, `developer`, `hammer`,
+and `hospital` in the first five results. Semantic results are compared with
+the lexical baseline, and irrelevant neighbors remain visible as limitations
+of the model and synthetic corpus.
 
 ## Design considerations
 
