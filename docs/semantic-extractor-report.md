@@ -506,34 +506,6 @@ explicit treatment of residual limitations. These are the principal technical
 outcomes documented by the source code, architecture diagram, evaluation
 results, and demonstration workflow.
 
-# Supporting work products
-
-1. **E-01 — Spring Boot source code.** Demonstrates catalog import, provider
-   abstraction, vector encoding, Redis indexing, and lexical and semantic APIs.
-   The source uses synthetic data and contains no credentials.
-
-2. **E-02 — Architecture sequence diagram.** Shows the end-to-end import and
-   semantic-query interactions among the user, API, model, and Redis. It is safe
-   to disclose.
-
-3. **E-03 — README and demonstration guide.** Document the architecture,
-   repeatable operation, presentation workflow, and known limitations. They are
-   safe to disclose.
-
-4. **E-04 — Makefile and Compose configuration.** Provide a repeatable local
-   Redis and Ollama environment and prepared evaluation workflow. They contain
-   no secrets.
-
-5. **E-05 — Evaluation results and Redis index output.** Record the measured
-   top-five outcomes, vector-index configuration, memory usage, and zero
-   indexing failures. The preserved queries and outputs support reproduction of
-   the observations.
-
-6. **E-06 — Provider integration code.** The provider-neutral interface and
-   separate Ollama and watsonx.ai adapters show how model hosting is isolated
-   from ingestion and retrieval. Environment-backed configuration keeps IBM
-   Cloud credentials and project-specific values outside the repository.
-
 \newpage
 
 # References
