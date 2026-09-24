@@ -1,6 +1,7 @@
 sequenceDiagram
     autonumber
     actor User
+    participant Make as Make Target
     participant API as Spring Boot API
     participant Importer as Word Import Service
     participant Model as Embedding Model
@@ -8,17 +9,17 @@ sequenceDiagram
 
     rect rgb(240, 247, 255)
         Note over User,Redis: Catalog import
-        User->>API: POST /api/words/import?limit=1000
-        API->>Importer: Import configured words file
-        Importer->>Importer: Normalize, filter, and deduplicate terms
-        loop For each batch of accepted terms
-            Importer->>Model: Generate term embeddings
-            Model-->>Importer: Embedding vectors
-            Importer->>Redis: Store terms, metadata, and vectors
-            Redis-->>Importer: Import acknowledged
-        end
+        User->>Make: make import
+        Make->>API: GET /actuator/health
+        API-->>Make: Application and Redis are UP
+        Make->>Make: Read first 1,000 dictionary entries
+        Make->>API: POST /api/words/import?reset=true (text/plain)
+        API->>Importer: Normalize, filter, and deduplicate terms
+        Importer->>Redis: Store terms and metadata
+        Redis-->>Importer: Import acknowledged
         Importer-->>API: Import summary
-        API-->>User: Imported and skipped counts
+        API-->>Make: Imported, skipped, and total counts
+        Make-->>User: Import completed
     end
 
     rect rgb(245, 255, 245)

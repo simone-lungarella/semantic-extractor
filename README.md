@@ -53,24 +53,38 @@ For each search request, the application:
 A lexical search is also provided as a baseline. This makes it possible to
 compare literal matching with concept-based retrieval.
 
-## Planned API
+## API
 
 ### Import words
 
 ```http
-POST /api/words/import?limit=1000
+POST /api/words/import?reset=true
+Content-Type: text/plain
+
+library
+firewall
+developer
 ```
 
 Example response:
 
 ```json
 {
-  "source": "/usr/share/dict/words",
-  "imported": 1000,
-  "skipped": 42,
-  "durationMs": 12500
+  "imported": 3,
+  "skipped": 0,
+  "total": 3,
+  "durationMs": 32
 }
 ```
+
+The API accepts newline-delimited words rather than reading a file from the
+server filesystem. It normalizes, filters, and deduplicates each batch. Set
+`reset=true` on the first request to replace the catalog; subsequent requests
+append terms. A request is limited to 1,000 lines so future embedding calls can
+be performed in controlled batches.
+
+At this stage the endpoint stores term hashes and a sorted lexical index.
+Embedding generation will be added to the same ingestion flow later.
 
 ### Lexical search
 
@@ -111,6 +125,9 @@ implementation details change.
 
 - Java 17
 - Spring Boot
+- Spring Web MVC with an embedded servlet container
+- Spring Data Redis with the Lettuce client
+- Spring Boot Actuator for Redis connectivity checks
 - Maven
 - An embedding model exposed through a configurable provider
 - Redis Stack with vector-search support
@@ -143,7 +160,7 @@ index must use the same dimension and distance metric as the generated vectors.
 
 - JDK 17
 - Maven 3.9+
-- Docker or a locally available Redis Stack instance
+- Podman with a Compose provider, or a locally available Redis Stack instance
 - Access to the configured embedding model
 - A words file such as `/usr/share/dict/words`
 
@@ -151,25 +168,40 @@ The words file may need to be installed separately, depending on the Linux
 distribution. A custom path can be configured when the default file is
 unavailable.
 
-### Start Redis Stack
+### Start Redis Stack with Podman
 
 ```bash
-docker run --rm --name semantic-extractor-redis \
-  -p 6379:6379 \
-  redis/redis-stack-server:latest
+podman compose up -d
+```
+
+Check that Redis is healthy:
+
+```bash
+podman compose ps
+podman exec semantic-extractor-redis redis-cli ping
+```
+
+The second command should return `PONG`. Stop Redis while retaining its named
+data volume with:
+
+```bash
+podman compose down
 ```
 
 ### Configure the application
 
-The final implementation will expose configuration for:
+The application only needs Redis connection settings at this stage:
 
 ```properties
-semantic-extractor.words-file=/usr/share/dict/words
-semantic-extractor.import-limit=1000
-semantic-extractor.search-limit=5
-semantic-extractor.similarity-threshold=0.60
 spring.data.redis.host=localhost
 spring.data.redis.port=6379
+```
+
+Redis connection settings can be overridden without editing the properties
+file:
+
+```bash
+REDIS_HOST=localhost REDIS_PORT=6379 mvn spring-boot:run
 ```
 
 Model-specific endpoint and credential properties will depend on the selected
@@ -181,6 +213,49 @@ must not be committed to the repository.
 ```bash
 mvn spring-boot:run
 ```
+
+The embedded web server listens on `http://localhost:8080` by default. The root
+path returns a 404 because the application only exposes API and Actuator paths.
+
+Verify the application and its Redis connection with:
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+With Redis available, the response includes an `UP` Redis component:
+
+```json
+{
+  "status": "UP",
+  "components": {
+    "redis": {
+      "status": "UP",
+      "details": {
+        "version": "..."
+      }
+    }
+  }
+}
+```
+
+Spring creates the Redis connection factory during application startup, but
+the underlying Lettuce connection is generally opened on first use. Calling
+the health endpoint performs an actual Redis command and therefore verifies
+connectivity rather than configuration alone.
+
+### Import a words file
+
+With the application running, import the first 1,000 entries from
+`/usr/share/dict/words` using the ready-to-run Make target:
+
+```bash
+make import
+```
+
+The target checks that the dictionary exists and that the application is
+healthy, then sends one plain-text batch with `reset=true`. The fixed input and
+batch size keep the POC reproducible and avoid unnecessary configuration.
 
 ### Test
 
