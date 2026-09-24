@@ -35,9 +35,11 @@ public class WordSearchService {
     }
 
     public SemanticSearchResponse semanticSearch(String rawQuery, Integer requestedLimit) {
+
         if (rawQuery == null || rawQuery.isBlank()) {
             throw new IllegalArgumentException("q must contain text");
         }
+
         String query = rawQuery.strip();
         int limit = validateLimit(requestedLimit);
         List<Float> vector = embeddingClient.embed(List.of(query)).get(0);

@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.annotation.PreDestroy;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.RedisCallback;
@@ -30,11 +31,14 @@ public class WordVectorStore {
     private final StringRedisTemplate redisTemplate;
     private final RedisClient redisClient;
 
+    public record SemanticMatch(String term, double score) {}
+
     public WordVectorStore(
             StringRedisTemplate redisTemplate,
-            @org.springframework.beans.factory.annotation.Value("${spring.data.redis.host}") String host,
-            @org.springframework.beans.factory.annotation.Value("${spring.data.redis.port}") int port,
-            @org.springframework.beans.factory.annotation.Value("${spring.data.redis.database}") int database) {
+            @Value("${spring.data.redis.host}") String host,
+            @Value("${spring.data.redis.port}") int port,
+            @Value("${spring.data.redis.database}") int database) {
+
         this.redisTemplate = redisTemplate;
         this.redisClient = RedisClient.create("redis://" + host + ":" + port + "/" + database);
         this.redisClient.setOptions(ClientOptions.builder()
@@ -48,6 +52,7 @@ public class WordVectorStore {
         }
 
         try {
+
             redisTemplate.execute((RedisCallback<Object>) connection -> connection.execute(
                     "FT.CREATE",
                     bytes(INDEX_NAME),
@@ -72,7 +77,9 @@ public class WordVectorStore {
     }
 
     public List<SemanticMatch> search(byte[] queryVector, int limit) {
+
         try (StatefulRedisConnection<byte[], byte[]> connection = redisClient.connect(ByteArrayCodec.INSTANCE)) {
+
             CommandArgs<byte[], byte[]> args = new CommandArgs<>(ByteArrayCodec.INSTANCE)
                     .add(INDEX_NAME)
                     .add("*=>[KNN $limit @embedding $queryVector AS distance]")
@@ -83,11 +90,14 @@ public class WordVectorStore {
                     .add("RETURN").add(2).add("term").add("distance")
                     .add("LIMIT").add(0).add(limit)
                     .add("DIALECT").add(2);
+
             Command<byte[], byte[], List<Object>> command = new Command<>(
                     new RawCommand("FT.SEARCH"),
                     new NestedMultiOutput<>(ByteArrayCodec.INSTANCE),
                     args);
+
             connection.dispatch(command);
+
             while (!command.isDone()) {
                 Thread.onSpinWait();
             }
@@ -108,12 +118,14 @@ public class WordVectorStore {
         }
 
         List<SemanticMatch> matches = new ArrayList<>();
+
         for (int index = 2; index < values.size(); index += 2) {
             if (!(values.get(index) instanceof List<?> fields)) {
                 continue;
             }
             String term = null;
             Double distance = null;
+
             for (int fieldIndex = 0; fieldIndex + 1 < fields.size(); fieldIndex += 2) {
                 String name = text(fields.get(fieldIndex));
                 String value = text(fields.get(fieldIndex + 1));
@@ -123,6 +135,7 @@ public class WordVectorStore {
                     distance = Double.valueOf(value);
                 }
             }
+
             if (term != null && distance != null) {
                 matches.add(new SemanticMatch(term, Math.max(0.0, 1.0 - distance)));
             }
@@ -131,6 +144,7 @@ public class WordVectorStore {
     }
 
     private void dropIndexIfPresent() {
+
         try {
             redisTemplate.execute((RedisCallback<Object>) connection -> connection.execute(
                     "FT.DROPINDEX", bytes(INDEX_NAME)));
@@ -160,9 +174,6 @@ public class WordVectorStore {
 
     private static byte[] bytes(String value) {
         return value.getBytes(StandardCharsets.UTF_8);
-    }
-
-    public record SemanticMatch(String term, double score) {
     }
 
     private record RawCommand(String command) implements ProtocolKeyword {

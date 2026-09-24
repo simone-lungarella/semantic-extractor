@@ -12,6 +12,9 @@ not contain the query text.
 The project deliberately focuses on the retrieval workflow. It is not intended
 to be a production search service.
 
+For the design rationale, implementation details, measured results, and
+limitations, read the [technical project report](docs/semantic-extractor-report.pdf).
+
 ## Architecture
 
 ![Semantic Extractor architecture](docs/diagrams/semantic-extractor-architecture.svg)

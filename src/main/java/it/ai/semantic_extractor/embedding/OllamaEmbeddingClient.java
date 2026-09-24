@@ -29,11 +29,11 @@ public class OllamaEmbeddingClient implements EmbeddingClient {
 
     @Override
     public List<List<Float>> embed(List<String> inputs) {
-        if (inputs.isEmpty()) {
-            return List.of();
-        }
+
+        if (inputs.isEmpty()) { return List.of(); }
 
         try {
+
             OllamaEmbedResponse response = restClient.post()
                     .uri("/api/embed")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -44,11 +44,13 @@ public class OllamaEmbeddingClient implements EmbeddingClient {
             if (response == null || response.embeddings() == null) {
                 throw new EmbeddingUnavailableException("Ollama returned no embeddings");
             }
+
             if (response.embeddings().size() != inputs.size()) {
                 throw new EmbeddingUnavailableException(
                         "Ollama returned %d vectors for %d inputs"
                                 .formatted(response.embeddings().size(), inputs.size()));
             }
+
             for (List<Float> vector : response.embeddings()) {
                 if (vector.size() != dimensions) {
                     throw new EmbeddingUnavailableException(
@@ -76,9 +78,7 @@ public class OllamaEmbeddingClient implements EmbeddingClient {
         return dimensions;
     }
 
-    private record OllamaEmbedRequest(String model, List<String> input, boolean truncate) {
-    }
+    private record OllamaEmbedRequest(String model, List<String> input, boolean truncate) {}
+    private record OllamaEmbedResponse(List<List<Float>> embeddings) {}
 
-    private record OllamaEmbedResponse(List<List<Float>> embeddings) {
-    }
 }

@@ -92,24 +92,29 @@ public class WordImportService {
 
     private List<List<Float>> embedInBatches(List<String> terms) {
         List<List<Float>> embeddings = new java.util.ArrayList<>(terms.size());
+
         for (int start = 0; start < terms.size(); start += EMBEDDING_BATCH_SIZE) {
+
             int end = Math.min(start + EMBEDDING_BATCH_SIZE, terms.size());
             List<String> batch = terms.subList(start, end);
             List<List<Float>> vectors = embeddingClient.embed(batch);
             if (vectors.size() != batch.size()) {
                 throw new WordImportException("Embedding provider returned an unexpected number of vectors");
             }
+
             for (List<Float> vector : vectors) {
                 if (vector.size() != embeddingClient.dimensions()) {
                     throw new WordImportException("Embedding provider returned an unexpected vector dimension");
                 }
             }
+
             embeddings.addAll(vectors);
         }
         return embeddings;
     }
 
     private void store(String term, List<Float> embedding) {
+
         String key = WORD_KEY_PREFIX + term;
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("term", term);
@@ -123,6 +128,7 @@ public class WordImportService {
     }
 
     private void clearCatalog() {
+
         Set<String> previousKeys = redisTemplate.opsForSet().members(CATALOG_KEYS);
         if (previousKeys != null && !previousKeys.isEmpty()) {
             redisTemplate.delete(previousKeys);
