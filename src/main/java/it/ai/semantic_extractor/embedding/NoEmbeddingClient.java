@@ -22,4 +22,9 @@ public class NoEmbeddingClient implements EmbeddingClient {
     public String modelId() {
         return "none";
     }
+
+    @Override
+    public int dimensions() {
+        return 0;
+    }
 }

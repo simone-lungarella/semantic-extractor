@@ -9,6 +9,9 @@ import org.springframework.data.redis.connection.Limit;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import it.ai.semantic_extractor.embedding.EmbeddingClient;
+import it.ai.semantic_extractor.embedding.FloatVectorCodec;
+
 @Service
 public class WordSearchService {
 
@@ -16,9 +19,32 @@ public class WordSearchService {
     static final int MAX_LIMIT = 20;
 
     private final StringRedisTemplate redisTemplate;
+    private final EmbeddingClient embeddingClient;
+    private final FloatVectorCodec vectorCodec;
+    private final WordVectorStore vectorStore;
 
-    public WordSearchService(StringRedisTemplate redisTemplate) {
+    public WordSearchService(
+            StringRedisTemplate redisTemplate,
+            EmbeddingClient embeddingClient,
+            FloatVectorCodec vectorCodec,
+            WordVectorStore vectorStore) {
         this.redisTemplate = redisTemplate;
+        this.embeddingClient = embeddingClient;
+        this.vectorCodec = vectorCodec;
+        this.vectorStore = vectorStore;
+    }
+
+    public SemanticSearchResponse semanticSearch(String rawQuery, Integer requestedLimit) {
+        if (rawQuery == null || rawQuery.isBlank()) {
+            throw new IllegalArgumentException("q must contain text");
+        }
+        String query = rawQuery.strip();
+        int limit = validateLimit(requestedLimit);
+        List<Float> vector = embeddingClient.embed(List.of(query)).get(0);
+        return new SemanticSearchResponse(
+                query,
+                embeddingClient.modelId(),
+                vectorStore.search(vectorCodec.encode(vector), limit));
     }
 
     public WordSearchResponse lexicalSearch(String rawQuery, Integer requestedLimit) {

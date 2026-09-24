@@ -21,4 +21,11 @@ public class WordSearchController {
             @RequestParam(required = false) Integer limit) {
         return wordSearchService.lexicalSearch(query, limit);
     }
+
+    @GetMapping("/semantic")
+    public SemanticSearchResponse semanticSearch(
+            @RequestParam("q") String query,
+            @RequestParam(required = false) Integer limit) {
+        return wordSearchService.semanticSearch(query, limit);
+    }
 }

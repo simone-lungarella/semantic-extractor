@@ -21,17 +21,15 @@ The editable Mermaid source is available at
 
 ### Catalog import
 
-The provided Make target reads the first 1,000 entries from
-`/usr/share/dict/words` and submits them to the application. The import flow:
+The provided Make target creates a deterministic sample distributed throughout
+`/usr/share/dict/words` and submits it to the application. The import flow:
 
 1. normalizes terms to lowercase;
 2. rejects unsupported values and word lengths;
 3. removes duplicates;
-4. stores the accepted terms and metadata in Redis; and
-5. maintains a sorted Redis index for lexical search.
-
-The next stage will generate an embedding for every accepted term and store it
-in the same Redis record for vector search.
+4. generates embeddings in batches with the selected provider;
+5. stores the accepted terms, metadata, and vectors in Redis; and
+6. creates indexes for lexical and vector search.
 
 The dictionary is synthetic, non-sensitive data used to simulate a larger
 catalog. Isolated words are not an ideal semantic-search corpus because they
@@ -43,12 +41,12 @@ Lexical search performs a case-insensitive prefix lookup against the Redis
 sorted index. It is the conventional, non-AI baseline and works without an
 embedding provider.
 
-Semantic search will:
+Semantic search:
 
 1. generate an embedding for a natural-language query;
 2. execute a nearest-neighbor search over the term vectors in Redis;
 3. return the closest terms with similarity scores; and
-4. omit results below a minimum confidence threshold.
+4. returns normalized cosine-similarity scores.
 
 Comparing lexical and semantic results demonstrates where embeddings improve
 concept-based discovery and where the limited corpus reduces their value.
@@ -60,7 +58,7 @@ concept-based discovery and where the limited corpus reduces their value.
 | `POST /api/words/import`      | Import newline-delimited terms into Redis.        | Available                 |
 | `GET /api/words/lexical`      | Search terms by literal prefix.                   | Available                 |
 | `POST /api/embeddings/test`   | Verify the selected embedding provider.           | Available with a provider |
-| `GET /api/words/semantic`     | Search terms by vector similarity.                | Planned                   |
+| `GET /api/words/semantic`     | Search terms by vector similarity.                | Available with a provider |
 | `GET /actuator/health`        | Verify the application and Redis connection.      | Available                 |
 
 ## Technology
@@ -69,13 +67,14 @@ concept-based discovery and where the limited corpus reduces their value.
 - Spring Boot and Spring Web MVC
 - Spring Data Redis with Lettuce
 - Redis Stack vector search
+- Ollama for local model execution
 - IBM watsonx.ai Java SDK
+- IBM Granite Embedding 30M English
 - IBM Granite Embedding 278M Multilingual
 - Maven and Podman Compose
 
-The application uses the provider-neutral `EmbeddingClient` interface so a
-local embedding provider can be added without changing the import and search
-workflows. The current implementation supports watsonx.ai; embeddings are
+The application uses the provider-neutral `EmbeddingClient` interface so the
+same import and search workflows can use Ollama or watsonx.ai. Embeddings are
 disabled when no provider is selected.
 
 ## Local development
@@ -85,8 +84,9 @@ disabled when no provider is selected.
 - JDK 17 or later
 - Maven 3.9 or later
 - Podman with a Compose provider
+- `jq`
 - `/usr/share/dict/words`
-- watsonx.ai credentials when testing embeddings
+- watsonx.ai credentials only when testing the cloud provider
 
 ### Start Redis
 
@@ -99,6 +99,18 @@ make redis-up
 ```bash
 make run
 ```
+
+This starts the lexical-only mode. To run semantic search locally, download and
+select the small English Granite embedding model:
+
+```bash
+make ollama-pull
+make run-ollama
+```
+
+The local `granite-embedding:30m` model is approximately 63 MB and produces
+384-dimensional vectors. Ollama runs as an optional Podman Compose service and
+retains the downloaded model in a named volume.
 
 The API listens on `http://localhost:8080`. The root path intentionally has no
 handler. Application and Redis connectivity can be checked at
@@ -113,13 +125,18 @@ make import
 ```
 
 The target checks the application health and imports a fixed 1,000-line sample,
-making the POC repeatable without additional arguments.
+making the POC repeatable without additional arguments. With an embedding
+provider selected, import generates vectors in batches, stores them as binary
+`FLOAT32` values, and creates the Redis vector index.
 
 Run `make help` to see all available development commands.
 
+[`DEMO.md`](DEMO.md) provides a repeatable walkthrough and suggested recording
+structure for presenting the complete workflow.
+
 ## watsonx.ai embeddings
 
-The watsonx.ai integration requires an IBM Cloud API key, a watsonx.ai project
+The optional watsonx.ai integration requires an IBM Cloud API key, a watsonx.ai project
 ID, and the regional service URL. Credentials are supplied through environment
 variables and must not be committed to the repository.
 
@@ -133,9 +150,10 @@ make run
 
 `WATSONX_URL` must identify the region containing the project. The configured
 model is `ibm/granite-embedding-278m-multilingual`, which produces
-768-dimensional vectors. The embedding test endpoint can validate credentials,
-model access, and vector dimensions before embeddings are added to the import
-flow.
+768-dimensional vectors. The embedding test endpoint validates credentials,
+model access, and vector dimensions before catalog import. Switching between
+the local and cloud models requires importing with `reset=true`, which rebuilds
+the Redis index for the selected vector dimensions.
 
 ## Evaluation
 

@@ -58,4 +58,9 @@ public class WatsonxEmbeddingClient implements EmbeddingClient {
     public String modelId() {
         return modelId;
     }
+
+    @Override
+    public int dimensions() {
+        return 768;
+    }
 }

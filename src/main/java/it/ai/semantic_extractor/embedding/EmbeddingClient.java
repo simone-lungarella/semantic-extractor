@@ -12,4 +12,6 @@ public interface EmbeddingClient {
     List<List<Float>> embed(List<String> inputs);
 
     String modelId();
+
+    int dimensions();
 }

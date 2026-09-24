@@ -15,7 +15,9 @@ sequenceDiagram
         Make->>Make: Read first 1,000 dictionary entries
         Make->>API: POST /api/words/import?reset=true (text/plain)
         API->>Importer: Normalize, filter, and deduplicate terms
-        Importer->>Redis: Store terms and metadata
+        Importer->>Model: Generate term embeddings in batches
+        Model-->>Importer: Term vectors
+        Importer->>Redis: Create index and store terms, metadata, and vectors
         Redis-->>Importer: Import acknowledged
         Importer-->>API: Import summary
         API-->>Make: Imported, skipped, and total counts
