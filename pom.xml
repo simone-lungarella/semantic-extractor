@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<watsonx-ai.version>0.40.0</watsonx-ai.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -45,6 +46,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.watsonx</groupId>
+			<artifactId>watsonx-ai</artifactId>
+			<version>${watsonx-ai.version}</version>
 		</dependency>
 
 		<dependency>

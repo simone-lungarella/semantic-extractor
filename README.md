@@ -208,6 +208,38 @@ Model-specific endpoint and credential properties will depend on the selected
 embedding provider. Secrets must be supplied through environment variables and
 must not be committed to the repository.
 
+### Configure embeddings
+
+Embeddings are disabled by default, so the application and lexical import work
+without cloud credentials. To use watsonx.ai, export the account-specific
+values and select the provider:
+
+To use watsonx.ai, export the account-specific values and select the provider:
+
+```bash
+export EMBEDDING_PROVIDER=watsonx
+export WATSONX_API_KEY='your-secret-api-key'
+export WATSONX_PROJECT_ID='your-project-id'
+export WATSONX_URL='https://eu-de.ml.cloud.ibm.com'
+mvn spring-boot:run
+```
+
+Use the watsonx.ai URL for the region containing the project. The configured
+model is `ibm/granite-embedding-278m-multilingual`, which returns 768-dimensional
+vectors. Test the provider without importing the catalog:
+
+```bash
+curl --fail --request POST \
+  --header 'Content-Type: text/plain' \
+  --data 'library' \
+  http://localhost:8080/api/embeddings/test
+```
+
+The response contains the model ID, vector dimensions, and only the first five
+values—not the entire vector. The Java code depends on the provider-neutral
+`EmbeddingClient` interface. A local provider can therefore be added later
+without changing the import or search workflows.
+
 ### Run
 
 ```bash
