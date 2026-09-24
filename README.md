@@ -12,6 +12,18 @@ not contain the query text.
 The project deliberately focuses on the retrieval workflow. It is not intended
 to be a production search service.
 
+## Architecture
+
+![Semantic Extractor architecture](docs/diagrams/semantic-extractor-architecture.svg)
+
+The Spring Boot application uses a provider-neutral embedding interface. Ollama
+serves IBM Granite locally for repeatable development, while the watsonx.ai
+adapter provides the cloud integration option. Redis Stack stores catalog terms
+and supports both lexical and vector search.
+
+The editable Mermaid source is available at
+[`docs/diagrams/semantic-extractor-architecture.mmd`](docs/diagrams/semantic-extractor-architecture.mmd).
+
 ## Process
 
 ![Semantic Extractor sequence](docs/diagrams/semantic-extractor-sequence.svg)

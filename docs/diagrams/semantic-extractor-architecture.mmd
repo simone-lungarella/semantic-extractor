@@ -1,0 +1,41 @@
+flowchart LR
+    User[API consumer]
+    Dictionary[Linux dictionary]
+
+    subgraph Application[Semantic Extractor]
+        API[Spring Boot REST API]
+        Import[Catalog import]
+        Search[Lexical and semantic search]
+        Provider[EmbeddingClient]
+    end
+
+    subgraph Models[Embedding providers]
+        Ollama[Ollama<br/>Granite Embedding 30M]
+        Watsonx[watsonx.ai<br/>Granite Embedding 278M]
+    end
+
+    Redis[(Redis Stack<br/>terms, lexical index, vector index)]
+
+    Dictionary -->|newline-delimited terms| API
+    User -->|import and search requests| API
+    API --> Import
+    API --> Search
+    Import --> Provider
+    Search --> Provider
+    Provider -->|local| Ollama
+    Provider -.->|cloud option| Watsonx
+    Import -->|metadata and FLOAT32 vectors| Redis
+    Search -->|prefix or KNN query| Redis
+    Redis -->|terms and similarity scores| Search
+    Search --> API
+    API -->|JSON response| User
+
+    classDef external fill:#f5f5f5,stroke:#666,color:#111;
+    classDef app fill:#e8f1fb,stroke:#0f62fe,color:#111;
+    classDef model fill:#eef8ee,stroke:#198038,color:#111;
+    classDef store fill:#fff3e6,stroke:#e66c00,color:#111;
+
+    class User,Dictionary external;
+    class API,Import,Search,Provider app;
+    class Ollama,Watsonx model;
+    class Redis store;
