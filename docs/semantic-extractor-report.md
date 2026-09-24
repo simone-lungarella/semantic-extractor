@@ -82,10 +82,12 @@ retrieved `library`, `developer`, `hammer`, and `hospital` in the first five
 results even though those terms did not appear in the respective queries.
 
 The application integrates with watsonx.ai through the official Java SDK and
-targets `ibm/granite-embedding-278m-multilingual` for cloud-hosted embeddings.
+targets **ibm/granite-embedding-278m-multilingual** for cloud-hosted embeddings.
 For repeatable development and local validation, I used IBM Granite Embedding
 30M English through Ollama. The measurements in this report come from that local
 run; they are not presented as watsonx.ai execution results.
+
+\newpage
 
 # Program need
 
@@ -142,15 +144,17 @@ demonstration. The corpus consists of isolated words, which have limited context
 and can be ambiguous. It is therefore suitable for technical validation but
 not for claiming production search quality.
 
+\newpage
+
 # Solution and technology
 
 ## Architecture
 
-![Semantic Extractor architecture](diagrams/semantic-extractor-architecture.png){ width=95% }
+![Semantic Extractor architecture](docs/diagrams/semantic-extractor-architecture.png){ width=95% }
 
 The public project repository contains the source code, editable Mermaid
 diagrams, local environment, and reproducible commands described in this
-report: **[insert public repository URL]**.
+report: https://github.com/simone-lungarella/semantic-extractor.
 
 The application has four principal runtime components:
 
@@ -219,6 +223,8 @@ Local Ollama inference was used to make development, repeated imports, and
 evaluation independent of network access and cloud credentials. watsonx.ai
 remains an application integration rather than the source of the measurements
 reported in this document.
+
+\newpage
 
 # Implementation and work products
 
@@ -305,6 +311,8 @@ shows only the vector-index fields relevant to technical evidence.
 **Validation.** I executed the documented startup, import, index inspection,
 and query sequence successfully from the command line.
 
+\newpage
+
 # Delivery approach
 
 I used an incremental, evidence-driven delivery approach consistent with
@@ -335,6 +343,8 @@ The approach was pragmatic rather than tied to a named delivery framework. The
 relevant practices were incremental delivery, baseline comparison, separation
 of concerns, externalized configuration, repeatable infrastructure, and changes
 driven by observed results.
+
+\newpage
 
 # Evaluation and results
 
@@ -390,6 +400,8 @@ find a target whose literal name is absent from the query. The lexical baseline
 remains preferable for known prefixes, while the semantic endpoint addresses
 descriptive discovery. The result supports completing a broader evaluation but
 does not establish production readiness.
+
+\newpage
 
 # Trustworthy AI, ethics, and governance
 
@@ -458,6 +470,8 @@ action. A production implementation would additionally require authenticated
 access, audit logging, monitored relevance metrics, controlled model versions,
 governed source data, and a review process for quality regressions.
 
+\newpage
+
 # Technical outcomes and lessons learned
 
 The project delivered a working end-to-end semantic retrieval path rather than
@@ -519,6 +533,8 @@ results, and demonstration workflow.
    separate Ollama and watsonx.ai adapters show how model hosting is isolated
    from ingestion and retrieval. Environment-backed configuration keeps IBM
    Cloud credentials and project-specific values outside the repository.
+
+\newpage
 
 # References
 

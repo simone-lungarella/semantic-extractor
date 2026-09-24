@@ -105,26 +105,3 @@ curl --silent \
 
 The endpoint exposes only the vector dimensions and a five-value sample, not
 the complete embedding.
-
-## Suggested recording structure
-
-A focused recording can take approximately four to six minutes:
-
-1. **Problem:** literal search requires users to know catalog terminology.
-2. **Architecture:** Spring Boot calls Granite through Ollama and stores vectors
-   in Redis Stack.
-3. **Import:** show `make import` and explain batched embedding generation.
-4. **Comparison:** run `make demo` and contrast lexical with semantic results.
-5. **Technical evidence:** briefly show the Redis index or embedding diagnostic.
-6. **Limitations:** isolated words are ambiguous, similarity is not factual
-   correctness, and watsonx.ai remains the intended cloud-provider validation.
-
-## Stop the environment
-
-Stop the Spring Boot process with `Ctrl+C`, then run:
-
-```bash
-make redis-down
-```
-
-The named Redis and Ollama volumes are retained for later demonstrations.
